@@ -1,0 +1,24 @@
+{
+  "name": "My Savings App",
+  "short_name": "Savings",
+  "description": "Track savings, deposits, withdrawals, and goals.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#17151f",
+  "theme_color": "#A4123F",
+  "icons": [
+    {
+      "src": "./icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

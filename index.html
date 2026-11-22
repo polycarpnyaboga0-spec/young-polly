@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#A4123F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="My Savings">
+<link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
+<link rel="manifest" href="./manifest.webmanifest">
+<title>My Savings App</title>
+<style>
+*{box-sizing:border-box}body{font-family:Arial,sans-serif;background:radial-gradient(circle at 12% 8%,#cf6d8e55 0,transparent 26%),radial-gradient(circle at 88% 18%,#7ca8d955 0,transparent 24%),linear-gradient(135deg,#17151f 0%,#321725 55%,#111827 100%);background-attachment:fixed;margin:0;padding:12px;color:#111;min-height:100vh}
+.card{background:rgba(255,255,255,.97);padding:20px;border-radius:20px;max-width:480px;margin:0 auto 12px;box-shadow:0 12px 35px rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.55);backdrop-filter:blur(12px)}
+h1,h2{color:#A4123F;text-align:center;margin:5px 0}.big{font-size:48px;text-align:center;font-weight:bold}.small{text-align:center;color:#666;font-size:14px}
+.bar-bg{background:#eee;height:30px;border-radius:20px;overflow:hidden;margin:12px 0}#bar{background:#A4123F;height:100%;color:#fff;line-height:30px;text-align:center;font-size:13px;transition:.5s}
+input,select{width:100%;padding:14px;margin:8px 0;border-radius:12px;border:2px solid #ddd;font-size:16px}input:focus,select:focus,button:focus{outline:3px solid #ffb3c7;outline-offset:2px}
+button{border:none;padding:14px;border-radius:12px;font-size:16px;width:100%;margin-top:8px;cursor:pointer;color:#fff;font-weight:bold}button:hover{filter:brightness(.92)}
+.green,.dark{background:#333}.maroon{background:#A4123F}.red{background:#d92d20}
+.row{display:flex;gap:10px}.row>*{flex:1}.tx{padding:12px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;gap:10px}.tx b{font-size:16px}.tx small{color:#777}
+.badge{padding:5px 10px;border-radius:20px;font-size:12px;font-weight:bold;white-space:nowrap}.in{background:#e6f4ea;color:#1a7f37}.out{background:#fdecea;color:#d92d20}
+.goal{background:#fff5f7;padding:12px;border-radius:12px;margin:8px 0;display:flex;justify-content:space-between;align-items:center;gap:8px}.goal.done{opacity:.65}.goal.done b{text-decoration:line-through}.goal-actions{display:flex}.goal button{width:auto;padding:8px 12px;font-size:13px;margin:0 2px}
+.lock{position:fixed;inset:0;background:radial-gradient(circle at 18% 22%,rgba(207,109,142,.42),transparent 30%),radial-gradient(circle at 82% 78%,rgba(124,168,217,.34),transparent 28%),linear-gradient(135deg,#17151f 0%,#321725 55%,#111827 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99;padding:20px}.lock input{max-width:300px;text-align:center;font-size:28px;letter-spacing:8px;background:rgba(255,255,255,.96);box-shadow:0 12px 35px rgba(0,0,0,.25)}.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div id="lockScreen" class="lock" role="dialog" aria-modal="true" aria-label="Savings app PIN">
+<h1 style="color:#fff">My Savings</h1><p style="color:#aaa">Enter PIN to open</p>
+<input type="password" id="pinInput" placeholder="......" maxlength="6" inputmode="numeric" pattern="[0-9]{6}" autocomplete="current-password" aria-label="6 digit PIN">
+<button class="maroon" id="unlockButton" style="max-width:300px" type="button">Unlock</button>
+<p style="color:#888;font-size:13px">First time? PIN is 123456</p>
+</div>
+<main id="app" class="hidden">
+<section class="card" style="background:#A4123F;color:#fff">
+<p style="text-align:center;margin:0;opacity:.9">TOTAL SAVED</p><div class="big" style="color:#fff">$<span id="saved">39.00</span></div>
+<p style="text-align:center;margin:0">Office goal $350 · Left $<span id="left">311.00</span></p>
+<div class="bar-bg" style="background:#ffffff4d"><div id="bar" style="width:11%">11%</div></div><p style="text-align:center;margin:0" id="msg">11% to your Office!</p>
+<div class="row" style="margin-top:12px"><div style="background:#ffffff33;padding:10px;border-radius:10px;text-align:center">Deposited<br><b>$<span id="totalIn">39.00</span></b></div><div style="background:#ffffff33;padding:10px;border-radius:10px;text-align:center">Withdrawn<br><b>$<span id="totalOut">0.00</span></b></div></div>
+</section>
+<section class="card"><h2>Deposit Money</h2><p class="small">Record money received from any payment source.</p>
+<input type="number" id="depAmt" placeholder="Amount in dollars" min="0.01" step="0.01" inputmode="decimal">
+<input type="text" id="depFrom" placeholder="From who? e.g. Upwork client" maxlength="80">
+<select id="depMethod"><option>Grey</option><option>Payoneer</option><option>Equity USD Account</option><option>M-pesa</option><option>Cash - At Home</option><option>Other</option></select>
+<select id="depGoal"><option value="General">For: General savings</option></select>
+<button class="green" type="button" onclick="deposit()">Confirm Deposit + Save</button></section>
+<section class="card"><h2>Withdraw / Spend</h2>
+<input type="number" id="withAmt" placeholder="Amount in dollars" min="0.01" step="0.01" inputmode="decimal">
+<input type="text" id="withWhy" placeholder="What did you buy?" maxlength="80">
+<button class="red" type="button" onclick="withdraw()">- Withdraw &amp; Save</button></section>
+<section class="card"><h2>Savings Goals</h2><div class="row"><input type="text" id="gName" placeholder="Goal e.g. Monitor" maxlength="80"><input type="number" id="gPrice" placeholder="$" min="0.01" step="0.01" inputmode="decimal"></div>
+<button class="maroon" type="button" onclick="addGoal()">+ Add New Goal</button><div id="goals"></div></section>
+<section class="card"><h2>All Transactions</h2><div class="row"><button class="dark" type="button" onclick="filterTx('all')">All</button><button class="dark" type="button" onclick="filterTx('in')">Deposits</button><button class="dark" type="button" onclick="filterTx('out')">Withdrawals</button></div>
+<input type="search" id="searchTx" placeholder="Search transactions..." oninput="render()"><div id="history"></div>
+<button class="dark" type="button" onclick="exportCSV()">Download Statement (CSV)</button></section>
+<section class="card"><h2>Settings</h2><label for="newPin">Change PIN (6 digits)</label>
+<input type="password" id="newPin" placeholder="New PIN e.g. 202611" maxlength="6" inputmode="numeric" pattern="[0-9]{6}" autocomplete="new-password">
+<button class="maroon" type="button" onclick="changePin()">Change PIN</button><button class="dark" type="button" onclick="lockApp()">Lock App</button>
+<button style="background:#888" type="button" onclick="resetApp()">Reset Everything</button><p class="small">This app stores your data in this browser only.</p></section>
+</main>
+<script>
+const STORAGE_KEY='polycap_savings_v3',OFFICE_GOAL=350;
+let filter='all';
+function defaultData(){return{saved:39,pin:'123456',goals:[{name:'Monitor',price:147,done:false},{name:'Chair',price:123,done:false},{name:'Keyboard + Mouse',price:63,done:false},{name:'Office Setup',price:350,done:false}],history:[{type:'in',amt:39,note:'Starting Savings',method:'Cash - At Home',goal:'General',date:new Date().toLocaleString()}]}}
+function validAmount(v){return Number.isFinite(v)&&v>0}
+function money(v){return Number(v).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
+function escapeHtml(v){const d=document.createElement('div');d.textContent=String(v);return d.innerHTML}
+function normalizeData(raw){
+ if(!raw||typeof raw!=='object')return defaultData();
+ const clean=defaultData();
+ clean.saved=validAmount(Number(raw.saved))?Number(raw.saved):clean.saved;
+ clean.pin=/^\d{6}$/.test(String(raw.pin))?String(raw.pin):'123456';
+ if(Array.isArray(raw.goals))clean.goals=raw.goals.filter(g=>g&&typeof g.name==='string'&&g.name.trim()&&validAmount(Number(g.price))).map(g=>({name:g.name.trim().slice(0,80),price:Number(g.price),done:Boolean(g.done)}));
+ if(Array.isArray(raw.history))clean.history=raw.history.filter(t=>t&&(t.type==='in'||t.type==='out')&&validAmount(Number(t.amt))).map(t=>({type:t.type,amt:Number(t.amt),note:String(t.note||'Transaction').slice(0,80),method:String(t.method||'Other').slice(0,80),goal:String(t.goal||'General').slice(0,80),date:String(t.date||new Date().toLocaleString()).slice(0,100)}));
+ return clean;
+}
+let data=defaultData();
+try{data=normalizeData(JSON.parse(localStorage.getItem(STORAGE_KEY)))}catch(e){data=defaultData();console.warn('Invalid saved data restored',e)}
+function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data))}catch(e){alert('Could not save data. Browser storage may be unavailable.');console.error(e)}}
+function unlock(){const pin=document.getElementById('pinInput');if(pin.value===data.pin){document.getElementById('lockScreen').classList.add('hidden');document.getElementById('app').classList.remove('hidden');pin.value='';render()}else{alert('Incorrect PIN');pin.select()}}
+function lockApp(){document.getElementById('pinInput').value='';document.getElementById('app').classList.add('hidden');document.getElementById('lockScreen').classList.remove('hidden');document.getElementById('pinInput').focus()}
+function render(){
+ document.getElementById('saved').textContent=money(data.saved);
+ document.getElementById('left').textContent=money(Math.max(0,OFFICE_GOAL-data.saved));
+ const pct=data.saved>=OFFICE_GOAL?100:Math.max(0,Math.round(data.saved/OFFICE_GOAL*100));const bar=document.getElementById('bar');bar.style.width=pct+'%';bar.textContent=pct+'%';
+ document.getElementById('msg').textContent=data.saved>=OFFICE_GOAL?'GOAL REACHED! Buy your office!':pct+'% to your Office!';
+ let totalIn=0,totalOut=0;data.history.forEach(t=>{if(t.type==='in')totalIn+=Number(t.amt);else totalOut+=Number(t.amt)});
+ document.getElementById('totalIn').textContent=money(totalIn);document.getElementById('totalOut').textContent=money(totalOut);
+ const selected=document.getElementById('depGoal').value;document.getElementById('depGoal').innerHTML='<option value="General">For: General savings</option>'+data.goals.map(g=>`<option value="${escapeHtml(g.name)}">${escapeHtml(g.name)} - $${money(g.price)}</option>`).join('');
+ if(Array.from(document.getElementById('depGoal').options).some(o=>o.value===selected))document.getElementById('depGoal').value=selected;
+ document.getElementById('goals').innerHTML=data.goals.length?data.goals.map((g,i)=>`<div class="goal${g.done?' done':''}"><div><b>${escapeHtml(g.name)}</b><br><span>$${money(g.price)}</span></div><div class="goal-actions"><button class="dark" type="button" onclick="toggleGoal(${i})">${g.done?'Undo':'Complete'}</button><button class="red" type="button" onclick="removeGoal(${i})">Remove</button></div></div>`).join(''):'<p class="small">No savings goals yet</p>';
+ const q=(document.getElementById('searchTx').value||'').trim().toLowerCase();
+ const list=data.history.slice().reverse().filter(t=>{if(filter==='in'&&t.type!=='in')return false;if(filter==='out'&&t.type!=='out')return false;if(q&&!String(t.note+' '+t.method+' '+t.goal+' '+t.date).toLowerCase().includes(q))return false;return true});
+ document.getElementById('history').innerHTML=list.length?list.map(t=>`<div class="tx"><div><b>${escapeHtml(t.note)}</b><br><small>${escapeHtml(t.method)} · ${escapeHtml(t.goal)} · ${escapeHtml(t.date)}</small></div><span class="badge ${t.type}">${t.type==='in'?'DEPOSIT':'WITHDRAW'} $${money(t.amt)}</span></div>`).join(''):'<p class="small">No transactions match</p>';
+}
+function readPositiveAmount(id){const amount=Number(document.getElementById(id).value);if(!validAmount(amount))return null;return Math.round(amount*100)/100}
+function deposit(){const amount=readPositiveAmount('depAmt');if(amount===null)return alert('Enter a valid amount greater than zero');data.saved=Math.round((data.saved+amount)*100)/100;data.history.push({type:'in',amt:amount,note:document.getElementById('depFrom').value.trim()||'Deposit',method:document.getElementById('depMethod').value,goal:document.getElementById('depGoal').value,date:new Date().toLocaleString()});document.getElementById('depAmt').value='';document.getElementById('depFrom').value='';save();render()}
+function withdraw(){const amount=readPositiveAmount('withAmt');if(amount===null)return alert('Enter a valid amount greater than zero');if(amount>data.saved)return alert('Not enough savings');data.saved=Math.round((data.saved-amount)*100)/100;data.history.push({type:'out',amt:amount,note:document.getElementById('withWhy').value.trim()||'Withdrawal',method:'Cash',goal:'General',date:new Date().toLocaleString()});document.getElementById('withAmt').value='';document.getElementById('withWhy').value='';save();render()}
+function addGoal(){const name=document.getElementById('gName').value.trim(),price=readPositiveAmount('gPrice');if(!name||price===null)return alert('Enter a goal name and a valid price');if(data.goals.some(g=>g.name.toLowerCase()===name.toLowerCase()))return alert('A goal with that name already exists');data.goals.push({name:name.slice(0,80),price,done:false});document.getElementById('gName').value='';document.getElementById('gPrice').value='';save();render()}
+function toggleGoal(i){if(!data.goals[i])return;data.goals[i].done=!data.goals[i].done;save();render()}
+function removeGoal(i){if(!data.goals[i])return;if(confirm(`Remove the "${data.goals[i].name}" goal?`)){data.goals.splice(i,1);save();render()}}
+function filterTx(v){filter=v;render()}
+function changePin(){const pin=document.getElementById('newPin').value;if(!/^\d{6}$/.test(pin))return alert('PIN must be exactly 6 digits');data.pin=pin;document.getElementById('newPin').value='';save();alert('PIN changed')}
+function resetApp(){if(confirm('Reset all savings, goals, transactions, and PIN?')){localStorage.removeItem(STORAGE_KEY);data=defaultData();save();lockApp();render()}}
+function exportCSV(){const rows=[['Type','Amount','Note','Method','Goal','Date']];data.history.forEach(t=>rows.push([t.type,t.amt,t.note,t.method,t.goal,t.date]));const csv=rows.map(row=>row.map(v=>{let t=String(v);if(/^[=+\-@]/.test(t))t="'"+t;return '"'+t.replace(/"/g,'""')+'"'}).join(',')).join('\r\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='savings_statement.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+document.getElementById('unlockButton').addEventListener('click',unlock);
+document.getElementById('pinInput').addEventListener('keydown',e=>{if(e.key==='Enter')unlock()});
+document.getElementById('pinInput').addEventListener('input',e=>{e.target.value=e.target.value.replace(/\D/g,'').slice(0,6)});
+document.getElementById('newPin').addEventListener('input',e=>{e.target.value=e.target.value.replace(/\D/g,'').slice(0,6)});
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(error=>console.error('Offline support could not be enabled.',error)));
+</script>
+</body>
+</html>
